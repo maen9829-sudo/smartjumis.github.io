@@ -1,0 +1,299 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Category ─────────────────────────────────────────────────────────────────
+model Category {
+  id       String @id @default(cuid())
+  name     String @unique // "Web Development", "Design", "Marketing"...
+  nameRu   String         // "Веб-разработка"
+  nameKk   String         // "Веб-әзірлеу"
+  icon     String?        // icon name or URL
+  slug     String @unique // "web-development"
+
+  projects Project[]
+}
+
+// ─── User (client of the platform) ───────────────────────────────────────────
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  googleId     String?  @unique
+  name         String
+  avatarUrl    String?
+  phone        String?
+  city         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  projects      Project[]
+  chatRooms     ChatRoom[]
+  notifications Notification[]
+  reviews       Review[]
+  refreshTokens RefreshToken[]
+}
+
+// ─── RefreshToken ─────────────────────────────────────────────────────────────
+model RefreshToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique  // bcrypt hash of the actual token
+  userAgent String?           // browser/device info
+  ipAddress String?           // client IP
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── Project (Order in Upwork terms) ─────────────────────────────────────────
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  budget      Int?          // in KZT (tenge)
+  budgetType  BudgetType    @default(FIXED)  // FIXED or HOURLY
+  deadline    DateTime?
+  status      ProjectStatus @default(DRAFT)
+  skills      String[]
+  aiEnhanced  Boolean       @default(false)
+
+  // Relations
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  clientId String
+  client   User   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  attachments  Attachment[]
+  proposals    Proposal[]
+  chatRoom     ChatRoom?
+  order        Order?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum BudgetType {
+  FIXED
+  HOURLY
+}
+
+enum ProjectStatus {
+  DRAFT        // Saved but not published
+  OPEN         // Published, accepting proposals
+  IN_REVIEW    // Client is reviewing proposals
+  IN_PROGRESS  // Freelancer assigned, work ongoing
+  COMPLETED    // Work delivered and accepted
+  CANCELLED    // Cancelled by client
+}
+
+// ─── Attachment (files uploaded to a project) ────────────────────────────────
+model Attachment {
+  id        String   @id @default(cuid())
+  fileName  String
+  fileUrl   String   // Supabase Storage public URL
+  fileSize  Int      // bytes
+  mimeType  String
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ─── Freelancer (fake profiles managed by admins) ────────────────────────────
+model Freelancer {
+  id               String  @id @default(cuid())
+  name             String
+  avatarUrl        String?
+  title            String   // "Full-Stack Developer", "UI/UX Designer"
+  bio              String
+  skills           String[]
+  languages        String[] // ["Russian", "Kazakh", "English"]
+  hourlyRate       Int      // KZT per hour
+  rating           Float    @default(5.0)
+  reviewCount      Int      @default(0)
+  completedJobs    Int      @default(0) // total completed orders
+  successRate      Int      @default(100) // percentage 0-100
+  responseTime     String   @default("within a day") // "within an hour" | "within a day"
+  city             String?
+  country          String   @default("Kazakhstan")
+  isActive         Boolean  @default(true)
+  isVerified       Boolean  @default(true) // shows verified badge
+  isTopRated       Boolean  @default(false) // shows Top Rated badge
+  memberSince      DateTime @default(now()) // when they "joined"
+  lastSeen         DateTime @default(now()) // "last seen 2 hours ago"
+
+  createdAt DateTime @default(now())
+
+  proposals     Proposal[]
+  chatRooms     ChatRoom[]
+  orders        Order[]
+  reviews       Review[]
+  portfolio     PortfolioItem[]
+  completedWork CompletedWork[]  // fake completed job history for the profile
+}
+
+// ─── PortfolioItem (work samples shown on freelancer profile) ─────────────────
+model PortfolioItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  imageUrl    String?  // screenshot or cover image
+  projectUrl  String?  // live link
+  category    String   // "Web Development", "Design", etc.
+  skills      String[] // tags shown on the item
+  createdAt   DateTime @default(now())
+
+  freelancerId String
+  freelancer   Freelancer @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+}
+
+// ─── CompletedWork (fake job history shown on profile) ────────────────────────
+// These are fabricated entries to make the profile look experienced
+model CompletedWork {
+  id           String   @id @default(cuid())
+  title        String   // "Built e-commerce site for retail client"
+  clientName   String   // "Client from Almaty" — anonymized
+  budget       Int      // KZT — what client "paid"
+  duration     String   // "2 weeks", "1 month"
+  completedAt  DateTime // when the "job" was done
+  rating       Float    @default(5.0)
+  review       String?  // short testimonial text
+
+  freelancerId String
+  freelancer   Freelancer @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+}
+
+
+// ─── Proposal (bid from freelancer) ──────────────────────────────────────────
+model Proposal {
+  id           String         @id @default(cuid())
+  coverLetter  String
+  price        Int            // proposed price in KZT
+  deliveryDays Int
+  status       ProposalStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+
+  projectId    String
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  freelancerId String
+  freelancer   Freelancer @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+
+  // When accepted, an Order is created
+  order        Order?
+}
+
+enum ProposalStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+// ─── Order (active contract between client and freelancer) ───────────────────
+// Created when a Proposal is ACCEPTED
+model Order {
+  id           String      @id @default(cuid())
+  agreedPrice  Int         // final agreed price in KZT
+  deliveryDays Int
+  status       OrderStatus @default(ACTIVE)
+  startedAt    DateTime    @default(now())
+  deadline     DateTime
+  completedAt  DateTime?
+  cancelReason String?
+
+  projectId    String     @unique
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  proposalId   String     @unique
+  proposal     Proposal   @relation(fields: [proposalId], references: [id])
+
+  freelancerId String
+  freelancer   Freelancer @relation(fields: [freelancerId], references: [id])
+
+  review Review?
+}
+
+enum OrderStatus {
+  ACTIVE      // Freelancer is working
+  DELIVERED   // Freelancer marked as delivered, waiting client review
+  COMPLETED   // Client accepted the delivery
+  CANCELLED   // Order was cancelled
+  DISPUTED    // In dispute
+}
+
+// ─── Review (left by client after order completion) ──────────────────────────
+model Review {
+  id         String   @id @default(cuid())
+  rating     Int      // 1-5
+  comment    String
+  createdAt  DateTime @default(now())
+
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  freelancerId String
+  freelancer   Freelancer @relation(fields: [freelancerId], references: [id])
+
+  clientId String
+  client   User   @relation(fields: [clientId], references: [id])
+}
+
+// ─── ChatRoom ─────────────────────────────────────────────────────────────────
+model ChatRoom {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  projectId    String     @unique
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  clientId     String
+  client       User       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  freelancerId String
+  freelancer   Freelancer @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+}
+
+// ─── Message ──────────────────────────────────────────────────────────────────
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  senderType String   // "client" | "freelancer"
+  senderId   String
+  isRead     Boolean  @default(false)
+  
+  // Optional file attachment
+  fileUrl    String?
+  fileName   String?
+  
+  createdAt  DateTime @default(now())
+
+  chatRoomId String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+}
+
+// ─── Notification ─────────────────────────────────────────────────────────────
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  // Types: "new_proposal" | "proposal_accepted" | "order_delivered"
+  //        | "order_completed" | "new_message" | "review_received"
+  text      String
+  link      String?  // frontend route to navigate to
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

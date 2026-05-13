@@ -1,0 +1,69 @@
+### 1. Auth - Register new client
+# @name register
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "name": "Test Client"
+}
+
+###
+
+### 2. Auth - Login
+# @name login
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "client@example.com",
+  "password": "password123"
+}
+
+### Capture Token
+@token = {{login.response.body.accessToken}}
+
+###
+
+### 3. Get Current User Profile (Requires Token)
+GET http://localhost:3001/api/auth/me
+Authorization: Bearer {{token}}
+
+###
+
+### 4. Get Categories (Public)
+GET http://localhost:3001/api/categories
+
+###
+
+### 5. Get Featured Freelancers (Public)
+GET http://localhost:3001/api/freelancers/featured
+
+###
+
+### 6. Create a Project (Requires Token)
+POST http://localhost:3001/api/projects
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Создать MVP платформы",
+  "description": "Нужен фуллстек разработчик на React и NestJS",
+  "budget": 500000,
+  "budgetType": "FIXED",
+  "categoryId": "replace-with-category-id-from-step-4",
+  "skills": ["React", "NestJS"]
+}
+
+###
+
+### 7. AI - Enhance Project
+POST http://localhost:3001/api/ai/enhance-project
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "надо сделать сайт кафе",
+  "description": "сделать простое меню и корзину"
+}
