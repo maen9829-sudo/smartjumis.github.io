@@ -9,7 +9,19 @@ export const ProposalsService = {
 
   // Get proposals for a specific project (Client only)
   findByProject: async (projectId: string) => {
-    const { data } = await api.get(`/api/proposals/project/${projectId}`);
+    const { data } = await api.get(`/api/proposals?projectId=${projectId}`);
+    return data;
+  },
+
+  // Accept a proposal
+  accept: async (id: string) => {
+    const { data } = await api.post(`/api/proposals/${id}/accept`);
+    return data;
+  },
+  
+  // Reject a proposal
+  reject: async (id: string) => {
+    const { data } = await api.post(`/api/proposals/${id}/reject`);
     return data;
   },
 

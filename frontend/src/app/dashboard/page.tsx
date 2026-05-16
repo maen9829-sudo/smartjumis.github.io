@@ -68,9 +68,9 @@ export default function DashboardPage() {
           </p>
         </div>
         {user?.role === 'CLIENT' && (
-          <button className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors">
+          <Link href="/projects/new" className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors">
             Post New Project
-          </button>
+          </Link>
         )}
       </div>
 
@@ -85,9 +85,9 @@ export default function DashboardPage() {
           {data.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
               <p className="text-slate-500 mb-4">You haven't posted any projects yet.</p>
-              <button className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
+              <Link href="/projects/new" className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
                 Post your first project
-              </button>
+              </Link>
             </div>
           ) : (
             <div className="grid gap-4">
@@ -105,9 +105,9 @@ export default function DashboardPage() {
                       <span>{project.proposals?.length || 0} proposals</span>
                     </div>
                   </div>
-                  <button className="text-indigo-600 font-medium hover:text-indigo-800 text-sm bg-indigo-50 px-4 py-2 rounded-md">
+                  <Link href={`/projects/${project.id}/proposals`} className="inline-block text-indigo-600 font-medium hover:text-indigo-800 text-sm bg-indigo-50 px-4 py-2 rounded-md">
                     View Proposals
-                  </button>
+                  </Link>
                 </div>
               ))}
             </div>
