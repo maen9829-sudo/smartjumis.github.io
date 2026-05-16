@@ -14,4 +14,8 @@ export class RegisterDto {
   @IsString()
   @IsOptional()
   city?: string;
+
+  @IsString()
+  @IsOptional()
+  role?: string;
 }

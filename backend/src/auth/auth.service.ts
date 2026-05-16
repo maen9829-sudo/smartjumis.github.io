@@ -133,7 +133,7 @@ export class AuthService {
 
   // ─── Get current user profile ─────────────────────────────────────────────
   async getMe(userId: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id:        true,
@@ -152,6 +152,8 @@ export class AuthService {
         },
       },
     });
+    if (!user) throw new UnauthorizedException('User not found');
+    return { ...user, role: 'CLIENT' };
   }
 
   // ─── Core: issue access + refresh token pair ──────────────────────────────
@@ -188,7 +190,7 @@ export class AuthService {
       accessToken,
       refreshToken: rawRefreshToken, // raw token sent to client, never stored plain
       expiresIn:    15 * 60,         // seconds — helps frontend schedule refresh
-      user: { id: userId, email },
+      user: { id: userId, email, role: 'CLIENT' },
     };
   }
 
