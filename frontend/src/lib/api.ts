@@ -1,9 +1,14 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
+// Sanitize baseURL: strip trailing /api if present to prevent /api/api double-prefix
+// This handles cases where NEXT_PUBLIC_API_URL is set with or without /api suffix
+const rawBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const baseURL = rawBaseUrl.replace(/\/api\/?$/, '');
+
 // Create a singleton axios instance
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
 });
 
