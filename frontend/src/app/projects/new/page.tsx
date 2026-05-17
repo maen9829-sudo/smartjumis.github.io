@@ -40,7 +40,7 @@ export default function CreateProjectPage() {
         description,
         budget: Number(budget),
         categoryId,
-        skillsRequired: skills.split(',').map(s => s.trim()).filter(Boolean)
+        skills: skills.split(',').map(s => s.trim()).filter(Boolean)
       });
       
       // Auto-publish for MVP
@@ -83,11 +83,11 @@ export default function CreateProjectPage() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Budget ($)</label>
-            <input required type="number" min="1" className="w-full border border-slate-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" value={budget} onChange={e => setBudget(e.target.value)} placeholder="500" />
+            <label className="block text-sm font-medium text-slate-700 mb-2">Бюджет (KZT)</label>
+            <input required type="number" min="5000" className="w-full border border-slate-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" value={budget} onChange={e => setBudget(e.target.value)} placeholder="5000" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Required Skills (comma separated)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Необходимые навыки (через запятую)</label>
             <input required type="text" className="w-full border border-slate-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" value={skills} onChange={e => setSkills(e.target.value)} placeholder="React, Node.js, UI/UX" />
           </div>
         </div>
