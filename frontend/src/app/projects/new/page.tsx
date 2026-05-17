@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { ProjectsService } from '@/lib/services/projects.service';
+import { CategoriesService } from '@/lib/services/categories.service';
+import { useEffect } from 'react';
 
 export default function CreateProjectPage() {
   const router = useRouter();
@@ -13,8 +15,14 @@ export default function CreateProjectPage() {
   const [description, setDescription] = useState('');
   const [budget, setBudget] = useState('');
   const [skills, setSkills] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [categories, setCategories] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    CategoriesService.findAll().then(setCategories).catch(console.error);
+  }, []);
 
   if (!isAuthenticated || user?.role !== 'CLIENT') {
     return <div className="p-12 text-center text-slate-500">Unauthorized. Only clients can post projects.</div>;
@@ -31,6 +39,7 @@ export default function CreateProjectPage() {
         title,
         description,
         budget: Number(budget),
+        categoryId,
         skillsRequired: skills.split(',').map(s => s.trim()).filter(Boolean)
       });
       
@@ -60,6 +69,16 @@ export default function CreateProjectPage() {
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
           <textarea required rows={5} className="w-full border border-slate-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the scope of work..." />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
+          <select required className="w-full border border-slate-300 p-3 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" value={categoryId} onChange={e => setCategoryId(e.target.value)}>
+            <option value="" disabled>Select a category</option>
+            {categories.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
