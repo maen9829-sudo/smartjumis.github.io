@@ -62,14 +62,16 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-slate-900">
+            {user?.role === 'CLIENT' ? 'Мои проекты' : 'Мои отклики'}
+          </h1>
           <p className="text-slate-500 mt-1">
-            Welcome back, {user?.name}. You are logged in as a <span className="font-semibold text-indigo-600">{user?.role}</span>.
+            Добро пожаловать, {user?.name}. Вы вошли как <span className="font-semibold text-primary-600">{user?.role === 'CLIENT' ? 'Заказчик' : 'Фрилансер'}</span>.
           </p>
         </div>
         {user?.role === 'CLIENT' && (
-          <Link href="/projects/new" className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors">
-            Post New Project
+          <Link href="/projects/new" className="btn-primary px-8 py-3 text-lg animate-pulse-slow shadow-lg shadow-primary-600/30">
+            + Опубликовать новый заказ
           </Link>
         )}
       </div>

@@ -44,8 +44,16 @@ export default function Navbar() {
                   href="/dashboard"
                   className="text-slate-500 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
-                  Dashboard
+                  {user?.role === 'CLIENT' ? 'Мои проекты' : 'Мои отклики'}
                 </Link>
+                {user?.role === 'CLIENT' && (
+                  <Link
+                    href="/projects/new"
+                    className="btn-primary shadow-lg shadow-primary-600/30 animate-pulse-slow"
+                  >
+                    Опубликовать заказ
+                  </Link>
+                )}
                 <div className="h-8 w-px bg-slate-200 mx-2" />
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col items-end">
@@ -128,8 +136,16 @@ export default function Navbar() {
                   href="/dashboard"
                   className="block px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                 >
-                  Dashboard
+                  {user?.role === 'CLIENT' ? 'Мои проекты' : 'Мои отклики'}
                 </Link>
+                {user?.role === 'CLIENT' && (
+                  <Link
+                    href="/projects/new"
+                    className="block px-4 py-2 text-base font-medium text-primary-600 hover:bg-primary-50"
+                  >
+                    Опубликовать заказ
+                  </Link>
+                )}
                 <button
                   onClick={logout}
                   className="block w-full text-left px-4 py-2 text-base font-medium text-red-500 hover:text-red-700 hover:bg-slate-50"
